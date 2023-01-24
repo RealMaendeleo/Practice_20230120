@@ -1,20 +1,114 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Описание
+Проект для студентов практики зима 2023г.
+Основан на рабочем проекте определяющим зависимости для разработки модулей интеграции(инвокеров) к внешним сервисам.
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Модули интеграции - подключаемые к сервису AxiLink модули для возможности отправки запросов во внешние сервисы
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+# Структура и зависимости проекта
+* Модуль invoker_parent содержит перечень модулей интеграции к сервисам данных, определяет зависимости допустимые при разработке модуля
+* Модуль dummyinvoker пример модуля-загрушки определяющий простейшие операции для модулей интеграции
+  * DummyHTTPS - отправка данных POST запросом
+  * DummyInvoker - на вход получает список параметров ключ=значение; в виде настроек. В зависимости от настроек производит задержку или генерирует ошибку
+  * DummyReplyInvoker - производит задержку в вызове в зависимости от наличия параметра настройки
+  * DummyInvokerV2 - обновленная версия DummyInvoker, использует обновленные методы из axilink-api(новый метод api по взаимодействию с инвокером, работа с параметрами настройки, возможность передачи контекста вызова)
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+Зависимости:
+Компоненты Spring 4.* версии
+axilink-api - собственная библиотека содержащая API для взаимодействия между модулями интеграции и сервисом AxiLink.
+Содержит абстракции для определения базового функционала модулей интеграции, а также вспомогательные методы для обработки данных(например XMLHelper для работы с xml)
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+# Настройка
+1. Для получения зависимости axilink-api необходимо в settings.xml файла maven прописать токен доступа к репозиторию Axiomatika
+   1. https://axiomatikallc.visualstudio.com/Practice_20230120/_artifacts/feed/axiomatika/connect/maven
+2. Для получения доступа к размещению готовых модулей для их дальнейшего тестирования необходимо в settings.xml файла maven указать id репозитория axilink-invokers и учетные данные для доступа к nexus репозиторию 
+3. Для проекта необходимо использовать Java 8 версии
+4. Для работы с контуром AxiLink располагающимся по адресам http://185.47.36.104/ или http://185.47.36.99/. Необходимо получить учетную запись AxiLink
+
+# Описание API модулей интеграции
+В axilink-api содержатся методы для взаимодействия между сервисом AxiLink и модулями интеграции
+Интерфейс определяющий API - **ru.axiomatika.axilink.api.externalsystems.ExternalSystem**
+
+Основной метод взаимодействия, который необходимо использовать при разработке - **ru.axiomatika.axilink.api.externalsystems.ExternalSystem.invokeWithObjectResponse(java.lang.String)**
+
+Входные данные поступают в виде xml, формат xml часть контракта между модулем и AxiLink. Формат xml передается независимо от формата, который требует источник для запроса
+
+# Процесс разработки в рамках прохождения практики
+Требования к разработке описаны в статье https://axiomatikallc.visualstudio.com/Practice_20230120/_wiki/wikis/Practice_20230120.wiki/1021/%D0%A0%D0%B5%D0%B3%D0%BB%D0%B0%D0%BC%D0%B5%D0%BD%D1%82-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D0%B8-%D0%B8%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%D0%B0
+
+Пример реализации модуля - UserInfoBlacklistInvoker
+
+    В модуле описан пример запроса в источник и проверка ответа от источника данных.
+    В модуле используется устаревший конструктор ExceptionBuilder, при реализации интеграции необходимо заменить на новый.
+
+Первичная проверка кода производится с помощью написания тестов, описывающих как успешные так и ошибочные сценарии взаимодействия
+
+    Пример написания тестов можно увидеть в модуле anyinvoker, класс UserInfoBlacklistInvokerTest
+
+Заглушка на запросы во внешний сервис устанавливается с помощью
+
+    CloseableHttpClient client = mockClient(invoker);
+    CloseableHttpResponse response = mockResponsePowerMock("", 500);
+
+После написания тестов и проверки реализации по ним, необходимо обозначить версию разрабатываемого модуля как SNAPSHOT в maven файле и выполнить команду maven deploy
+
+После успешного выполнения команды версия модуля будет находиться в репозитории, готовая к использованию со стороны AxiLink
+
+Следующий этап, разработка входного xslt преобразования, с помощью которого будет сформирован xml необходимого формата(для модуля).
+XSLT преобразование должно преобразовывать данные из AxiLink в формат необходимый модулю для работы.
+Разработка XSLT ведется в ПО Oxygen XML
+Пример данных из AxiLink, который необходимо использовать
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Application>
+        <AXI>
+            <application_e client_surname="Тестов"></application_e>
+        </AXI>
+    </Application>
+
+client_surname пример формата передачи данных о физ. лице.
+
+После формирования xslt, необходимо на обозначенном в задаче контуре AxiLink настроить шаг/call
+
+    Определяет набор настроек по вызову внешнего сервиса
+Настройка производится через интерфейс:
+1. Панель настройки -> настройка шага -> Действие + -> Полная форма
+2. В форме необходимо указать наименование шага, полную ссылку на имя класса(get reference в IDEA)
+3. Входная трансформация - входное xslt преобразования
+4. Параметры источника - добавить все используемые в интеграции параметры(например url)
+5. Создать
+
+После успешного создания шага, необходимо произвести сброс настроек в сервисе (конфигурация, очистить кэш текущего сервиса)
+В случае необходимости отредактировать параметры:
+1. Выбрать созданный шаг
+2. редактировать
+3. сохранить
+4. произвести очистку кэша сервиса
+
+Чтобы добавить разработанный модуль или его обновленную версию
+1. Перейти на вкладку "ИНФОРМАЦИЯ О СИСТЕМЕ"
+2. Просмотр/загрузка модуля
+3. Ввести нужное наименование и выбрать последнюю версию
+4. Нажать загрузить.
+5. Ожидать результата загрузки на вкладке Настройка/События
+6. Сбросить кэш сервиса
+
+Шаг настроек, модуль загружен, можно производить тестовые вызовы сервиса.
+
+curl вызова сервиса
+
+    curl --location --request POST 'http://localhost:8090/axilink-1.0/rpc/v2/sync-application' \
+    --header 'Content-Type: application/xml' \
+    --data-raw '<?xml version="1.0" encoding="UTF-8"?>
+    <request>
+    <callName>ANY</callName>
+    <applicationId></applicationId>
+    <text><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+    <Application>
+        <CreditRequest/>
+        <AXI>
+            <application_e client_birthdate="1988-02-02" client_name="Тест" client_surname="Тестов" mob_phone_num="79996661122"/>
+        </AXI>
+    </Application>]]></text>
+    </request>'
+
+После успешного получения ответа от сервиса, можно приступать к описанию Wiki(см. инструкцию разработки)

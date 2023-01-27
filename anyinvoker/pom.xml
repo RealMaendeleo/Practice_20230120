@@ -22,7 +22,30 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>axiomatika@Local</id>
+            <url>https://axiomatikallc.pkgs.visualstudio.com/_packaging/axiomatika%40Local/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
-
+    <distributionManagement>
+        <repository>
+            <id>axiomatika@Local</id>
+            <url>https://axiomatikallc.pkgs.visualstudio.com/_packaging/axiomatika%40Local/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </distributionManagement>
 
 </project>

@@ -20,6 +20,16 @@
             <name>Snapshot</name>
             <url>https://repo.axiomatika.ru/repository/axilink-invokers-snapshots-interns/</url>
         </snapshotRepository>
+        <repository>
+            <id>axiomatika@Local</id>
+            <url>https://axiomatikallc.pkgs.visualstudio.com/_packaging/axiomatika%40Local/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </distributionManagement>
 
     <modules>
@@ -50,6 +60,16 @@
         <repository>
             <id>axiomatika</id>
             <url>https://pkgs.dev.azure.com/AxiomatikaLLC/_packaging/axiomatika/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>axiomatika@Local</id>
+            <url>https://axiomatikallc.pkgs.visualstudio.com/_packaging/axiomatika%40Local/maven/v1</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
